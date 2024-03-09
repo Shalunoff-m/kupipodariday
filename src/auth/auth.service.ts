@@ -12,19 +12,14 @@ export class AuthService {
   ) {}
 
   async validateUser(getName: string, getPassword: string) {
-    const user = await this.usersService.findOne(getName);
-    // Выход, если пользователь не найден или пароль не совпадает
-    if (!user) {
-      return null;
-    }
+    const findUser = await this.usersService.findOneByUsername(getName);
 
-    const isMatch = await bcrypt.compare(getPassword, user.password);
-    if (!isMatch) {
-      return null;
-    }
+    if (!findUser) return null;
 
-    // Используем деструктуризацию, чтобы исключить пароль из возвращаемого объекта
-    const { password, ...userWithoutPassword } = user;
+    const isMatch = await bcrypt.compare(getPassword, findUser.password);
+    if (!isMatch) return null;
+
+    const { password, ...userWithoutPassword } = findUser;
     return userWithoutPassword;
   }
 

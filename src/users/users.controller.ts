@@ -30,27 +30,22 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
-  }
-
   @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(AuthGuard('jwt'))
   @Get('me')
   async getUser(@Req() req) {
-    // Проверяем пользователя
-    console.log(req.user);
     return req.user;
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(id, updateUserDto);
+  @UseGuards(AuthGuard('jwt'))
+  @Get(':username')
+  async getByUserName(@Param('username') userName: string) {
+    return await this.usersService.findOneByUsername(userName);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('me')
+  async updateUser(@Req() req, @Body() updateUserdto: UpdateUserDto) {
+    return await this.usersService.updateUser(req.id, updateUserdto);
   }
 }
