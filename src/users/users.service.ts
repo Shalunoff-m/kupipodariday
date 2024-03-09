@@ -28,7 +28,7 @@ export class UsersService {
   }
 
   async findOneByUsername(getName: string) {
-    return await this.userRepository.findOneBy({ username: getName });
+    return await this.userRepository.findOne({ where: { username: getName } });
   }
 
   async updateUser(_id: number, updateUserDto: UpdateUserDto) {
@@ -40,5 +40,28 @@ export class UsersService {
     }
 
     return this.userRepository.update(user, updatedUser);
+  }
+
+  async searchForUser(query: string) {
+    const user = await this.userRepository.find({
+      where: { username: query },
+    });
+    return user;
+  }
+
+  async getActiveUserWishes(username: string) {
+    const user = await this.userRepository.findOne({
+      where: { username },
+      relations: ['wishes'],
+    });
+    return user.wishes;
+  }
+
+  async getUserWishs(username: string) {
+    const user = await this.userRepository.find({
+      where: { username },
+      relations: ['wishes'],
+    });
+    return user;
   }
 }

@@ -10,6 +10,7 @@ import { UsersModule } from './users/users.module';
 import { WishesModule } from './wishes/wishes.module';
 import { WishlistsModule } from './wishlists/wishlists.module';
 import { ConfigModule } from '@nestjs/config';
+import { Wish } from './wishes/entities/wish.entity';
 dotenv.config();
 
 @Module({
@@ -22,7 +23,7 @@ dotenv.config();
       username: 'student',
       password: 'student',
       database: 'kupipodariday',
-      entities: [User],
+      entities: [User, Wish],
       synchronize: true,
     }),
 
