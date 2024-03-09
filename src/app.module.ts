@@ -1,13 +1,15 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import * as dotenv from 'dotenv';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './auth/auth.module';
+import { OffersModule } from './offers/offers.module';
+import { User } from './users/entities/user.entity';
 import { UsersModule } from './users/users.module';
 import { WishesModule } from './wishes/wishes.module';
 import { WishlistsModule } from './wishlists/wishlists.module';
-import { OffersModule } from './offers/offers.module';
-import { User } from './users/entities/user.entity';
-import { AuthModule } from './auth/auth.module';
+dotenv.config();
 
 @Module({
   imports: [
@@ -21,6 +23,7 @@ import { AuthModule } from './auth/auth.module';
       entities: [User],
       synchronize: true,
     }),
+
     UsersModule,
     WishesModule,
     WishlistsModule,
