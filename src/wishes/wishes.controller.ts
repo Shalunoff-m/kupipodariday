@@ -16,10 +16,12 @@ import { AuthGuard } from '@nestjs/passport';
 export class WishesController {
   constructor(private readonly wishesService: WishesService) {}
 
-  @UseGuards(AuthGuard('jwt'))
   @Post()
   async create(@Body() createWishDto: CreateWishDto, @Req() req) {
-    return await this.wishesService.createWish(createWishDto, req.user);
+    return await this.wishesService.createWish(
+      createWishDto,
+      req.user.username,
+    );
   }
 
   @Get('/last')
@@ -33,12 +35,17 @@ export class WishesController {
   }
 
   @Get(':id')
-  async getWishById(@Param('id') id: number) {
-    return await this.wishesService.getWishById(id);
+  async getWishbyId(@Param('id') id: number) {
+    return await this.wishesService.getWishById(id, ['owner']);
   }
 
   @Delete(':id')
-  async deleteWishById(@Param('id') id: number) {
-    return await this.wishesService.deleteWishById(id);
+  async deleteWishById(@Param('id') id: number, @Req() currentUser) {
+    return await this.wishesService.deleteWishById(id, currentUser);
+  }
+
+  @Post(':id/copy')
+  async copyWish(@Param('id') id: number, @Req() req) {
+    return this.wishesService.copyWish(id, req.user);
   }
 }

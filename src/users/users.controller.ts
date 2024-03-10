@@ -15,59 +15,46 @@ import { AuthGuard } from '@nestjs/passport';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
-import { JwtGuard } from 'src/auth/jwt.guards';
+import { JwtGuard } from 'src/auth/jwt.guard';
 
+@UseGuards(JwtGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.usersService.findAll();
-  }
-
-  @UseInterceptors(ClassSerializerInterceptor)
-  @UseGuards(JwtGuard)
   @Get('me')
   async getUser(@Req() req) {
-    return req.user;
+    return await this.usersService.getUserById(req.user.id);
   }
 
-  @UseGuards(JwtGuard)
   @Get(':username')
-  async getByUserName(@Param('username') userName: string) {
-    return await this.usersService.findOneByUsername(userName);
+  async getByUsername(@Param('username') username: string) {
+    return await this.usersService.getUserByUsername(username);
   }
 
-  @UseGuards(JwtGuard)
-  @Patch('me')
-  async updateUser(@Req() req, @Body() updateUserdto: UpdateUserDto) {
-    return await this.usersService.updateUser(req.id, updateUserdto);
-  }
-
-  @Post('find')
-  async searchForUser(@Body() searchQuery: any) {
-    const result = await this.usersService.searchForUser(searchQuery.query);
-    return result;
+  @Get('me/wishes')
+  async getActiveUserWishes(@Req() req) {
+    const result = await this.usersService.getUserById(req.user.id, ['wishes']);
+    return result.wishes;
   }
 
   @Get(':username/wishes')
   async getUserWishs(@Param('username') username: string) {
-    const result = await this.usersService.getActiveUserWishes(username);
-    return result;
+    const result = await this.usersService.getUserByUsername(username, [
+      'wishes',
+    ]);
+
+    return result.wishes;
   }
 
-  @UseGuards(JwtGuard)
-  @Get('me/wishes')
-  async getActiveUserWishes(@Req() req) {
-    const result = await this.usersService.getActiveUserWishes(
-      req.user.username,
-    );
+  @Patch('me')
+  async updateUser(@Req() req, @Body() updateUserdto: UpdateUserDto) {
+    return await this.usersService.updateUser(req.user.id, updateUserdto);
+  }
+
+  @Post('find')
+  async searchForUser(@Body() searchQuery: any) {
+    const result = await this.usersService.searchForUsers(searchQuery.query);
     return result;
   }
 }

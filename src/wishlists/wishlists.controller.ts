@@ -1,34 +1,44 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { WishlistsService } from './wishlists.service';
 import { CreateWishlistDto } from './dto/create-wishlist.dto';
 import { UpdateWishlistDto } from './dto/update-wishlist.dto';
+import { JwtGuard } from 'src/auth/jwt.guard';
 
+@UseGuards(JwtGuard)
 @Controller('wishlists')
 export class WishlistsController {
   constructor(private readonly wishlistsService: WishlistsService) {}
 
-  @Post()
-  create(@Body() createWishlistDto: CreateWishlistDto) {
-    return this.wishlistsService.create(createWishlistDto);
-  }
-
   @Get()
-  findAll() {
-    return this.wishlistsService.findAll();
+  async getWishlists() {
+    return await this.wishlistsService.getAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.wishlistsService.findOne(+id);
+  async getWishList(@Param('id') id: number) {
+    return await this.wishlistsService.getById(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateWishlistDto: UpdateWishlistDto) {
-    return this.wishlistsService.update(+id, updateWishlistDto);
+  @Post()
+  async createWishList(
+    @Body() createWishListDto: CreateWishlistDto,
+    @Req() req,
+  ) {
+    return await this.wishlistsService.create(createWishListDto, req.user);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.wishlistsService.remove(+id);
+  async deleteWishList(@Param('id') id: number) {
+    return await this.wishlistsService.deleteById(id);
   }
 }

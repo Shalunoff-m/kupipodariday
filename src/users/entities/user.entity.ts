@@ -1,4 +1,5 @@
 import { Wish } from 'src/wishes/entities/wish.entity';
+import { Wishlist } from 'src/wishlists/entities/wishlist.entity';
 import {
   Column,
   CreateDateColumn,
@@ -36,4 +37,7 @@ export class User {
 
   @OneToMany(() => Wish, (wish) => wish.owner)
   wishes: Wish[];
+
+  @OneToMany(() => Wishlist, (wishlist) => wishlist.owner)
+  wishlists: Wishlist[];
 }

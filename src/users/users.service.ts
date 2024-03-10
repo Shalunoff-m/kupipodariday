@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,7 +14,6 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     const hash = await bcrypt.hash(createUserDto.password, 10);
-
     const user = this.userRepository.create({
       ...createUserDto,
       password: hash,
@@ -23,44 +22,44 @@ export class UsersService {
     return this.userRepository.save(user);
   }
 
-  async findAll(): Promise<User[]> {
-    return this.userRepository.find();
-  }
-
-  async findOneByUsername(getName: string) {
-    return await this.userRepository.findOne({ where: { username: getName } });
-  }
-
-  async updateUser(_id: number, updateUserDto: UpdateUserDto) {
-    const user = await this.userRepository.findOneBy({ _id });
-    const updatedUser = updateUserDto;
-
-    if (updatedUser.password) {
-      updatedUser.password = await bcrypt.hash(updateUserDto.password, 10);
-    }
-
-    return this.userRepository.update(user, updatedUser);
-  }
-
-  async searchForUser(query: string) {
-    const user = await this.userRepository.find({
-      where: { username: query },
+  async getUserById(id: number, relations = null) {
+    const user = await this.userRepository.findOne({
+      where: { _id: id },
+      relations,
     });
+    if (!user) {
+      throw new NotFoundException();
+    }
     return user;
   }
 
-  async getActiveUserWishes(username: string) {
+  async getUserByUsername(username: string, relations = null) {
     const user = await this.userRepository.findOne({
       where: { username },
-      relations: ['wishes'],
+      relations,
     });
-    return user.wishes;
+    if (!user) {
+      throw new NotFoundException();
+    }
+    return user;
   }
 
-  async getUserWishs(username: string) {
+  async updateUser(id: number, updateUserDto: UpdateUserDto) {
+    const user = await this.getUserById(id);
+
+    if (updateUserDto.password) {
+      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
+    }
+    return this.userRepository.update(user, updateUserDto);
+  }
+
+  async searchForUsers(query: string) {
+    const searchQuery = query.includes('@')
+      ? { email: query }
+      : { username: query };
+
     const user = await this.userRepository.find({
-      where: { username },
-      relations: ['wishes'],
+      where: searchQuery,
     });
     return user;
   }

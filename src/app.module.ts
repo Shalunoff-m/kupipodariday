@@ -11,6 +11,7 @@ import { WishesModule } from './wishes/wishes.module';
 import { WishlistsModule } from './wishlists/wishlists.module';
 import { ConfigModule } from '@nestjs/config';
 import { Wish } from './wishes/entities/wish.entity';
+import { Wishlist } from './wishlists/entities/wishlist.entity';
 dotenv.config();
 
 @Module({
@@ -23,7 +24,7 @@ dotenv.config();
       username: 'student',
       password: 'student',
       database: 'kupipodariday',
-      entities: [User, Wish],
+      entities: [User, Wish, Wishlist],
       synchronize: true,
     }),
 

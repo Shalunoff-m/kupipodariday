@@ -12,7 +12,7 @@ export class AuthService {
   ) {}
 
   async validateUser(getName: string, getPassword: string) {
-    const findUser = await this.usersService.findOneByUsername(getName);
+    const findUser = await this.usersService.getUserByUsername(getName);
 
     if (!findUser) return null;
 
