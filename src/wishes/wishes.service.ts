@@ -25,11 +25,11 @@ export class WishesService {
     return this.wishRepo.save(wish);
   }
 
-  async findLastWish() {
+  async showLastWish() {
     return this.wishRepo.find({ order: { createdAt: 'DESC' }, take: 40 });
   }
 
-  async findTopWish() {
+  async showTopWish() {
     return this.wishRepo.find({ order: { copied: 'DESC' }, take: 10 });
   }
 

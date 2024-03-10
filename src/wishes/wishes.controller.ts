@@ -32,12 +32,12 @@ export class WishesController {
 
   @Get('/last')
   async getLastWishes() {
-    return await this.wishesService.findLastWish();
+    return await this.wishesService.showLastWish();
   }
 
   @Get('/top')
   async getTopWishes() {
-    return await this.wishesService.findTopWish();
+    return await this.wishesService.showTopWish();
   }
 
   @Get(':id')
