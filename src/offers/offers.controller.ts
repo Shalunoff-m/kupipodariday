@@ -7,16 +7,6 @@ import { JwtGuard } from 'src/auth/guard/jwt.guard';
 @Controller('offers')
 export class OffersController {
   constructor(private readonly offersService: OffersService) {}
-  @Get()
-  async getAllOffers() {
-    return await this.offersService.findAllOffers();
-  }
-
-  @Get(':id')
-  async getOffer(@Body('id') id: number) {
-    return await this.offersService.findOfferById(id);
-  }
-
   @Post()
   async createOffer(
     @Body() createOfferDto: CreateOfferDto,
@@ -26,5 +16,15 @@ export class OffersController {
       ...createOfferDto,
       hidden: false,
     });
+  }
+
+  @Get()
+  async getAllOffers() {
+    return await this.offersService.findAllOffers();
+  }
+
+  @Get(':id')
+  async getOffer(@Body('id') id: number) {
+    return await this.offersService.findOfferById(id);
   }
 }

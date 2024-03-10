@@ -1,4 +1,3 @@
-import { Exclude } from 'class-transformer';
 import { Offer } from 'src/offers/entities/offer.entity';
 import { Wish } from 'src/wishes/entities/wish.entity';
 import { Wishlist } from 'src/wishlists/entities/wishlist.entity';
@@ -14,7 +13,7 @@ import {
 @Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn()
-  _id: number;
+  id: number;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -34,8 +33,7 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Exclude()
-  @Column({ select: false })
+  @Column()
   password: string;
 
   @OneToMany(() => Wish, (wish) => wish.owner)

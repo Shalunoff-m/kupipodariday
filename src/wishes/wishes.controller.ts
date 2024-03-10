@@ -42,7 +42,7 @@ export class WishesController {
 
   @Get(':id')
   async getWish(@Param('id') id: number) {
-    return await this.wishesService.findWishById(id, ['owner', 'offers']);
+    return await this.wishesService.findWishById(id, ['owner']);
   }
 
   @Patch(':id')

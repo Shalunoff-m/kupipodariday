@@ -57,7 +57,7 @@ export class WishesService {
   async copyWish(id: number, currentUser: User) {
     const wish = await this.findWishById(id, ['owner']);
 
-    if (wish.owner._id === currentUser._id) {
+    if (wish.owner.id === currentUser.id) {
       throw new ConflictException('Вы уже добавили себе этот подарок');
     }
 
@@ -72,7 +72,7 @@ export class WishesService {
     updateWishDto: UpdateWishDto,
   ) {
     const wish = await this.findWishById(id, ['owner']);
-    if (userId !== wish.owner._id) {
+    if (userId !== wish.owner.id) {
       throw new ForbiddenException('Вы не можете изменить чужой подарок');
     }
     if (wish.raised !== 0) {

@@ -34,7 +34,10 @@ export class WishlistsService {
     return wishlist;
   }
 
-  async createWishlist(createWishListDto: CreateWishlistDto, currentUser) {
+  async createWishlist(
+    createWishListDto: CreateWishlistDto,
+    currentUser: User,
+  ) {
     const { itemsId, ...collectionData } = createWishListDto;
     const wishes = await this.wishesService.findManyById(itemsId);
     const user = await this.usersService.findUserById(currentUser.id);
@@ -49,7 +52,7 @@ export class WishlistsService {
   async deleteWishlistById(id: number, currentUser: User) {
     const wishlist = await this.findWishlistById(id);
 
-    if (wishlist.owner._id !== currentUser._id) {
+    if (wishlist.owner.id !== currentUser.id) {
       throw new ForbiddenException('Вы не можете удалить чужую коллекцию');
     }
     return this.wishlistsRepo.delete(id);

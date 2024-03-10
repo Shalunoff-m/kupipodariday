@@ -38,7 +38,7 @@ export class OffersService {
       'owner',
     ]);
 
-    if (user._id === wish.owner._id) {
+    if (user.id === wish.owner.id) {
       throw new ForbiddenException('Вы не можете поддержать свой подарок');
     }
     if (wish.price - wish.raised < createOfferDto.amount) {

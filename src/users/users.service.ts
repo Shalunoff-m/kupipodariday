@@ -30,13 +30,14 @@ export class UsersService {
       ...createUserDto,
       password: hash,
     });
+    // TODO Вернуть потом всё обратно
 
     return this.userRepository.save(user);
   }
 
   async findUserById(id: number, relations = null) {
     const user = await this.userRepository.findOne({
-      where: { _id: id },
+      where: { id },
       relations,
     });
 
