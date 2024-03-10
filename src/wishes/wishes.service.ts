@@ -9,6 +9,7 @@ import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersService } from 'src/users/users.service';
 import { Wish } from './entities/wish.entity';
+import { UpdateWishDto } from './dto/update-wish.dto';
 
 @Injectable()
 export class WishesService {
@@ -78,8 +79,12 @@ export class WishesService {
     }
 
     await this.createWish(wishCopy, currentUser.username);
-    await this.wishRepo.update(id, {
+    return this.wishRepo.update(id, {
       copied: wish.copied + 1,
     });
+  }
+
+  async updateWish(id: number, updateWishDto: UpdateWishDto) {
+    return await this.wishRepo.update(id, updateWishDto);
   }
 }

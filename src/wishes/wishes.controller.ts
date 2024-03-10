@@ -46,6 +46,6 @@ export class WishesController {
 
   @Post(':id/copy')
   async copyWish(@Param('id') id: number, @Req() req) {
-    return this.wishesService.copyWish(id, req.user);
+    return await this.wishesService.copyWish(id, req.user);
   }
 }

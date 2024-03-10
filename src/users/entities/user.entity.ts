@@ -1,3 +1,4 @@
+import { Offer } from 'src/offers/entities/offer.entity';
 import { Wish } from 'src/wishes/entities/wish.entity';
 import { Wishlist } from 'src/wishlists/entities/wishlist.entity';
 import {
@@ -40,4 +41,7 @@ export class User {
 
   @OneToMany(() => Wishlist, (wishlist) => wishlist.owner)
   wishlists: Wishlist[];
+
+  @OneToMany(() => Offer, (offer) => offer.user)
+  Offers: Offer[];
 }
