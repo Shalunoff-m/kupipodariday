@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { Offer } from 'src/offers/entities/offer.entity';
 import { Wish } from 'src/wishes/entities/wish.entity';
 import { Wishlist } from 'src/wishlists/entities/wishlist.entity';
@@ -33,6 +34,7 @@ export class User {
   @Column({ unique: true })
   email: string;
 
+  @Exclude()
   @Column({ select: false })
   password: string;
 

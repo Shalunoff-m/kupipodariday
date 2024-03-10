@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,39 +17,45 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const hash = await bcrypt.hash(createUserDto.password, 10);
-    const user = this.userRepository.create({
-      ...createUserDto,
-      password: hash,
-    });
+    try {
+      const hash = await bcrypt.hash(createUserDto.password, 10);
+      const user = this.userRepository.create({
+        ...createUserDto,
+        password: hash,
+      });
 
-    return this.userRepository.save(user);
+      return await this.userRepository.save(user);
+    } catch (err) {
+      if (err.code === '23505') {
+        throw new ConflictException('Электронная почта уже испольуется');
+      }
+    }
   }
 
-  async getUserById(id: number, relations = null) {
+  async findUserById(id: number, relations = null) {
     const user = await this.userRepository.findOne({
       where: { _id: id },
       relations,
     });
     if (!user) {
-      throw new NotFoundException();
+      throw new NotFoundException('Такого пользователя не существует');
     }
     return user;
   }
 
-  async getUserByUsername(username: string, relations = null) {
+  async findUserByUsername(username: string, relations = null) {
     const user = await this.userRepository.findOne({
       where: { username },
       relations,
     });
     if (!user) {
-      throw new NotFoundException();
+      throw new NotFoundException('Такого пользователя не существует');
     }
     return user;
   }
 
-  async updateUser(id: number, updateUserDto: UpdateUserDto) {
-    const user = await this.getUserById(id);
+  async updateUserById(id: number, updateUserDto: UpdateUserDto) {
+    const user = await this.findUserById(id);
 
     if (updateUserDto.password) {
       updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
@@ -53,7 +63,7 @@ export class UsersService {
     return this.userRepository.update(user, updateUserDto);
   }
 
-  async searchForUsers(query: string) {
+  async findUsersByQuery(query: string) {
     const searchQuery = query.includes('@')
       ? { email: query }
       : { username: query };
@@ -61,6 +71,10 @@ export class UsersService {
     const user = await this.userRepository.find({
       where: searchQuery,
     });
+
+    if (!user) {
+      throw new NotFoundException('Такого пользователя не существует');
+    }
     return user;
   }
 }

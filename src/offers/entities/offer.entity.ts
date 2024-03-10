@@ -27,7 +27,7 @@ export class Offer {
   hidden: boolean;
 
   @ManyToOne(() => Wish, (wish) => wish.offer)
-  item: Wish[];
+  item: Wish;
 
   @ManyToOne(() => User, (user) => user.Offers)
   user: User;

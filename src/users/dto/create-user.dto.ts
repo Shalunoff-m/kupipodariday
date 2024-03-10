@@ -13,12 +13,15 @@ export class CreateUserDto {
   @Length(1, 64)
   username: string;
 
+  @IsNotEmpty()
+  @IsEmail()
+  @Length(1, 64)
   @IsEmail()
   email: string;
 
   @IsNotEmpty()
   @IsString()
-  @Length(2, 64)
+  @Length(1, 64)
   password: string;
 
   @IsOptional()

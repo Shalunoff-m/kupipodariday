@@ -1,10 +1,10 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { CreateOfferDto } from './dto/create-offer.dto';
-import { UpdateOfferDto } from './dto/update-offer.dto';
 import { WishesService } from 'src/wishes/wishes.service';
 import { Repository } from 'typeorm';
 import { Offer } from './entities/offer.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class OffersService {
@@ -13,27 +13,29 @@ export class OffersService {
     private readonly wishesService: WishesService,
   ) {}
 
-  async getAll() {
+  async findAllOffers() {
     return this.offerRepo.find({
       where: {},
       relations: { user: true, item: true },
     });
   }
 
-  async getById(id: number) {
+  async findOfferById(id: number) {
     return this.offerRepo.findOneBy({ id });
   }
 
-  async create(user: any, createOfferDto: any) {
-    const wish = await this.wishesService.getWishById(createOfferDto.itemId, [
+  async createOffer(user: User, createOfferDto: CreateOfferDto) {
+    const wish = await this.wishesService.findWishById(createOfferDto.itemId, [
       'owner',
     ]);
 
-    if (user.id === wish.owner._id) {
-      throw new ForbiddenException();
+    if (user._id === wish.owner._id) {
+      throw new ForbiddenException('Вы не можете поддержать свой подарок');
     }
     if (wish.price - wish.raised < createOfferDto.amount) {
-      throw new ForbiddenException();
+      throw new ForbiddenException(
+        'Вы не можете внести сумму больше стоимости подарка',
+      );
     }
 
     wish.raised += createOfferDto.amount;
@@ -44,8 +46,7 @@ export class OffersService {
       item: wish,
     });
 
-    await this.wishesService.updateWish(wish.id, wish);
-
+    await this.wishesService.updateRaisedWishById(user._id, wish.id, wish);
     return this.offerRepo.save(offer);
   }
 }
