@@ -10,7 +10,7 @@ import {
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { LocalGuard } from './local.guards';
+import { LocalGuard } from './guard/local.guard';
 
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('')
@@ -21,14 +21,14 @@ export class AuthController {
   ) {}
 
   @UseGuards(LocalGuard)
-  @Post('signIn')
+  @Post('signin')
   async signIn(@Req() req) {
-    return this.authService.auth(req.user);
+    return this.authService.login(req.user);
   }
 
-  @Post('signUp')
+  @Post('signup')
   async signUp(@Body() createUserDto: CreateUserDto) {
     const user = await this.usersService.create(createUserDto);
-    return await this.authService.auth(user);
+    return await this.authService.login(user);
   }
 }

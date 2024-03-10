@@ -1,10 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateWishlistDto } from './dto/create-wishlist.dto';
 import { WishesService } from 'src/wishes/wishes.service';
 import { UsersService } from 'src/users/users.service';
 import { Repository } from 'typeorm';
 import { Wishlist } from './entities/wishlist.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class WishlistsService {
@@ -18,7 +23,7 @@ export class WishlistsService {
     return this.wishlistsRepo.find({ relations: ['owner', 'items'] });
   }
 
-  async findWishlistById(id: number) {
+  async findWishlistById(id: number): Promise<Wishlist> {
     const wishlist = await this.wishlistsRepo.findOne({
       where: { id },
       relations: ['owner', 'items'],
@@ -41,7 +46,12 @@ export class WishlistsService {
     });
   }
 
-  async deleteWishlistById(id: number) {
+  async deleteWishlistById(id: number, currentUser: User) {
+    const wishlist = await this.findWishlistById(id);
+
+    if (wishlist.owner._id !== currentUser._id) {
+      throw new ForbiddenException('Вы не можете удалить чужую коллекцию');
+    }
     return this.wishlistsRepo.delete(id);
   }
 }

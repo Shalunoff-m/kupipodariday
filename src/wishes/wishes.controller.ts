@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { WishesService } from './wishes.service';
 import { CreateWishDto } from './dto/create-wish.dto';
-import { JwtGuard } from 'src/auth/jwt.guard';
+import { JwtGuard } from 'src/auth/guard/jwt.guard';
 import { UpdateWishDto } from './dto/update-wish.dto';
 
 @UseGuards(JwtGuard)

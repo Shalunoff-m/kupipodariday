@@ -17,19 +17,21 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    try {
-      const hash = await bcrypt.hash(createUserDto.password, 10);
-      const user = this.userRepository.create({
-        ...createUserDto,
-        password: hash,
-      });
+    const existingUser = await this.userRepository.findOne({
+      where: { email: createUserDto.email },
+    });
 
-      return await this.userRepository.save(user);
-    } catch (err) {
-      if (err.code === '23505') {
-        throw new ConflictException('Электронная почта уже испольуется');
-      }
+    if (existingUser) {
+      throw new ConflictException('Электронная почта уже используется');
     }
+
+    const hash = await bcrypt.hash(createUserDto.password, 10);
+    const user = this.userRepository.create({
+      ...createUserDto,
+      password: hash,
+    });
+
+    return this.userRepository.save(user);
   }
 
   async findUserById(id: number, relations = null) {
@@ -37,9 +39,11 @@ export class UsersService {
       where: { _id: id },
       relations,
     });
+
     if (!user) {
       throw new NotFoundException('Такого пользователя не существует');
     }
+
     return user;
   }
 
@@ -48,19 +52,32 @@ export class UsersService {
       where: { username },
       relations,
     });
+
     if (!user) {
       throw new NotFoundException('Такого пользователя не существует');
     }
+
     return user;
   }
 
   async updateUserById(id: number, updateUserDto: UpdateUserDto) {
     const user = await this.findUserById(id);
 
+    if (updateUserDto.email && updateUserDto.email !== user.email) {
+      const emailAlreadyExist = await this.userRepository.findOne({
+        where: { email: updateUserDto.email },
+      });
+
+      if (emailAlreadyExist) {
+        throw new ConflictException('Электронная почта уже используется');
+      }
+    }
+
     if (updateUserDto.password) {
       updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
     }
-    return this.userRepository.update(user, updateUserDto);
+
+    return this.userRepository.update(id, updateUserDto);
   }
 
   async findUsersByQuery(query: string) {
@@ -68,13 +85,6 @@ export class UsersService {
       ? { email: query }
       : { username: query };
 
-    const user = await this.userRepository.find({
-      where: searchQuery,
-    });
-
-    if (!user) {
-      throw new NotFoundException('Такого пользователя не существует');
-    }
-    return user;
+    return this.userRepository.find({ where: searchQuery });
   }
 }

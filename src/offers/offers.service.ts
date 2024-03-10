@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateOfferDto } from './dto/create-offer.dto';
 import { WishesService } from 'src/wishes/wishes.service';
 import { Repository } from 'typeorm';
@@ -9,19 +13,24 @@ import { User } from 'src/users/entities/user.entity';
 @Injectable()
 export class OffersService {
   constructor(
-    @InjectRepository(Offer) private offerRepo: Repository<Offer>,
+    @InjectRepository(Offer)
+    private offerRepo: Repository<Offer>,
     private readonly wishesService: WishesService,
   ) {}
 
   async findAllOffers() {
     return this.offerRepo.find({
       where: {},
-      relations: { user: true, item: true },
+      relations: ['user', 'item'],
     });
   }
 
   async findOfferById(id: number) {
-    return this.offerRepo.findOneBy({ id });
+    const offer = await this.offerRepo.findOneBy({ id });
+    if (!offer) {
+      throw new NotFoundException(`Предложение с ID ${id} не найдено.`);
+    }
+    return offer;
   }
 
   async createOffer(user: User, createOfferDto: CreateOfferDto) {
@@ -46,7 +55,7 @@ export class OffersService {
       item: wish,
     });
 
-    await this.wishesService.updateRaisedWishById(user._id, wish.id, wish);
+    await this.wishesService.updateRaisedWishById(wish.id, wish);
     return this.offerRepo.save(offer);
   }
 }

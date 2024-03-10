@@ -10,6 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UsersService } from 'src/users/users.service';
 import { Wish } from './entities/wish.entity';
 import { UpdateWishDto } from './dto/update-wish.dto';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class WishesService {
@@ -20,21 +21,20 @@ export class WishesService {
 
   async createWish(createWishDto: CreateWishDto, username: string) {
     const user = await this.usersService.findUserByUsername(username);
-    const wish = this.wishRepo.create(createWishDto);
-    wish.owner = user;
+    const wish = this.wishRepo.create({ ...createWishDto, owner: user });
     return this.wishRepo.save(wish);
   }
 
   async findLastWish() {
-    return this.wishRepo.find({ order: { createdAt: 'desc' }, take: 40 });
+    return this.wishRepo.find({ order: { createdAt: 'DESC' }, take: 40 });
   }
 
   async findTopWish() {
-    return this.wishRepo.find({ order: { copied: 'desc' }, take: 10 });
+    return this.wishRepo.find({ order: { copied: 'DESC' }, take: 10 });
   }
 
-  async findWishById(id: number, relations = null) {
-    const wish = this.wishRepo.findOne({ where: { id }, relations });
+  async findWishById(id: number, relations: string[] = []) {
+    const wish = await this.wishRepo.findOne({ where: { id }, relations });
     if (!wish) {
       throw new NotFoundException('Такого подарка не существует');
     }
@@ -50,36 +50,20 @@ export class WishesService {
     return this.wishRepo.delete({ id });
   }
 
-  async findManyById(idArr: any) {
-    const wishes = await this.wishRepo.find({
-      where: { id: In(idArr) },
-    });
-    return wishes;
+  async findManyById(ids: number[]) {
+    return this.wishRepo.findBy({ id: In(ids) });
   }
 
-  async copyWish(id: number, currentUser) {
+  async copyWish(id: number, currentUser: User) {
     const wish = await this.findWishById(id, ['owner']);
-    const wishCopy = {
-      name: wish.name,
-      image: wish.image,
-      link: wish.link,
-      price: wish.price,
-      description: wish.description,
-    };
-    const hasWish = await this.wishRepo.find({
-      where: {
-        owner: { _id: currentUser.id },
-      },
-    });
 
-    if (hasWish.length) {
+    if (wish.owner._id === currentUser._id) {
       throw new ConflictException('Вы уже добавили себе этот подарок');
     }
 
-    await this.createWish(wishCopy, currentUser.username);
-    return this.wishRepo.update(id, {
-      copied: wish.copied + 1,
-    });
+    const newWish = { ...wish, copied: wish.copied + 1 };
+    await this.createWish(newWish, currentUser.username);
+    return this.wishRepo.save(newWish);
   }
 
   async updateWishById(
@@ -91,14 +75,15 @@ export class WishesService {
     if (userId !== wish.owner._id) {
       throw new ForbiddenException('Вы не можете изменить чужой подарок');
     }
+    if (wish.raised !== 0) {
+      throw new ConflictException(
+        'Вы не можете изменить стоимость подарка, если уже есть желающие его поддержать',
+      );
+    }
     return await this.wishRepo.update(id, updateWishDto);
   }
 
-  async updateRaisedWishById(
-    userId: number,
-    id: number,
-    updateWishDto: UpdateWishDto,
-  ) {
+  async updateRaisedWishById(id: number, updateWishDto: UpdateWishDto) {
     return await this.wishRepo.update(id, updateWishDto);
   }
 }

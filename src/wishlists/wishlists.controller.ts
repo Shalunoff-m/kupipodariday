@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { WishlistsService } from './wishlists.service';
 import { CreateWishlistDto } from './dto/create-wishlist.dto';
-import { JwtGuard } from 'src/auth/jwt.guard';
+import { JwtGuard } from 'src/auth/guard/jwt.guard';
 
 @UseGuards(JwtGuard)
 @Controller('wishlists')
@@ -39,7 +39,7 @@ export class WishlistsController {
   }
 
   @Delete(':id')
-  async deleteWishList(@Param('id') id: number) {
-    return await this.wishlistsService.deleteWishlistById(id);
+  async deleteWishList(@Param('id') id: number, @Req() req) {
+    return await this.wishlistsService.deleteWishlistById(id, req.user);
   }
 }
