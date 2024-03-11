@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -84,6 +85,27 @@ export class WishesService {
   }
 
   async updateRaisedWishById(id: number, updateWishDto: UpdateWishDto) {
-    return await this.wishRepo.update(id, updateWishDto);
+    const wish = await this.wishRepo.findOne({ where: { id } });
+    if (!wish) {
+      throw new NotFoundException(`Желание с идентификатором ${id} не найдено`);
+    }
+
+    const { raised, price } = wish;
+    const { amountToAdd } = updateWishDto;
+
+    if (!amountToAdd) {
+      throw new BadRequestException('Необходимо указать сумму для добавления');
+    }
+
+    if (amountToAdd + raised > price) {
+      throw new ForbiddenException(
+        `Сумма взноса превышает сумму остатка стоимости подарка: ${price - raised} руб.`,
+      );
+    }
+
+    return await this.wishRepo.update(id, {
+      ...updateWishDto,
+      raised: raised + amountToAdd,
+    });
   }
 }
